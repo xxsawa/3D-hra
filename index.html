@@ -16,6 +16,7 @@
 <script>
     const canvasX = 1200
     const canvasY = 800
+    let fov = 500
     let lastFrameTime = performance.now();
     let fps = 0;
     let weWillRotate = 0;
@@ -168,7 +169,7 @@
 
         for (let i = 0; i < shape.length; i++) {
 
-            shape[i] = [shape[i][0] * 500 / Math.max(shape[i][2], 0.1), (shape[i][1] * 500 / Math.max(shape[i][2], 0.1)), shape[i][2]]
+            shape[i] = [shape[i][0] * fov / Math.max(shape[i][2], 0.1), (shape[i][1] * fov / Math.max(shape[i][2], 0.1)), shape[i][2]]
         }
         let scale = shape[0][2];
 
@@ -196,7 +197,7 @@
         shape = rotateX(rotateYM, rotateY(rotateXM, shape))
         for (let i = 0; i < shape.length; i++) {
 
-            shape[i] = [shape[i][0] * 500 / Math.max(shape[i][2], 0.1), (shape[i][1] * 500 / Math.max(shape[i][2], 0.1)), shape[i][2]]
+            shape[i] = [shape[i][0] * fov / Math.max(shape[i][2], 0.1), (shape[i][1] * fov / Math.max(shape[i][2], 0.1)), shape[i][2]]
         }
         ctx.fillStyle = 'black';
         ctx.font = `${Math.max(5000 / shape[0][2], 5)}px serif`;
@@ -218,7 +219,12 @@
     function renderFrame() {
         fillBackground();
         let speed = 2
-        if (keys['v']) speed = 5
+        if (keys['v']) {
+            speed = 7;
+            fov = Math.max(fov -= 10, 300)
+        } else {
+            fov = Math.min(fov += 10, 500)
+        }
         if (keys['w']) w += speed * Math.cos(rotateXM)
         if (keys['a']) a += speed * Math.cos(rotateXM)
         if (keys['s']) s += speed * Math.cos(rotateXM)
