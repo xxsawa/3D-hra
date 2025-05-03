@@ -142,6 +142,7 @@
         const delta = now - lastFrameTime;
         lastFrameTime = now;
 
+        // Calculate FPS
         fps = 1000 / delta;
         ctx.fillStyle = 'black';
         ctx.font = "15px serif";
@@ -180,6 +181,7 @@
             ctx.font = "10px serif";
             scale = point3d[2];
             ctx.lineTo(point3d[0] + 400, point3d[1] + 400);
+            //ctx.fillText("x: " + Math.floor(point3d[0] + 400) + ", y: " + Math.floor(point3d[1] + 400) + " $ " + i++, point3d[0] + 400, point3d[1] + 400);
 
         });
         scale = shape[0][2];
@@ -228,7 +230,10 @@
         //measureFPS();
         ctx.fillStyle = 'black';
         ctx.font = "15px serif";
-        ctx.fillText('press "v" for run  ')
+        ctx.fillText('press "v" for run  ', 100, 70)
+        // ctx.fillText("LR: " + Math.sin(rotateXM) + "", 100, 70);
+        // ctx.fillText("FB: " + Math.cos(rotateXM) + "", 100, 90);
+        // ctx.fillText("y rotate: " + rotateYM + "", 100, 80);
         let zval = document.getElementById("slider");
         ctx.strokeStyle = "black";
         ratio = Math.sin(rotateXM);
