@@ -10,18 +10,20 @@
 </head>
 
 <body>
-    <canvas style="margin-left: 7.5vw;border: solid;" id="tutorial" width="800" height="800"></canvas>
+    <canvas style="margin-left: 3vw;border: solid;" id="tutorial" width="800" height="800"></canvas>
 
 </body>
 <script>
-
+    const canvasX = 1200
+    const canvasY = 800
     let lastFrameTime = performance.now();
     let fps = 0;
     let weWillRotate = 0;
     let w = 0, a = 0, s = 0, d = 0;
     const canvas = document.getElementById("tutorial");
     const ctx = canvas.getContext("2d");
-
+    ctx.canvas.width = canvasX
+    ctx.canvas.height = canvasY
     const keys = {};
     window.addEventListener('keydown', e => keys[e.key] = true);
     window.addEventListener('keyup', e => keys[e.key] = false);
@@ -97,6 +99,7 @@
         [0, 1, 1],
         [1, 1, 1],
         [1, 1, 0],
+        [0, 1, 0],
     ];
 
     let middlePoint = [
@@ -169,9 +172,9 @@
         }
         let scale = shape[0][2];
 
-        ctx.moveTo((shape[0][0]) + 400, (shape[0][1]) + 400);
+        ctx.moveTo((shape[0][0]) + canvasX / 2, (shape[0][1]) + canvasY / 2);
         shape.forEach(point3d => {
-            if (point3d[0] + 400 > 800 || point3d[1] + 400 > 800 || point3d[0] + 400 < 0 || point3d[1] + 400 < 0) {
+            if (point3d[0] + canvasX / 2 > 800 || point3d[1] + canvasY / 2 > 800 || point3d[0] + canvasX / 2 < 0 || point3d[1] + canvasY / 2 < 0) {
                 ctx.fillStyle = "red"
             } else {
                 ctx.fillStyle = "black"
@@ -180,12 +183,12 @@
 
             ctx.font = "10px serif";
             scale = point3d[2];
-            ctx.lineTo(point3d[0] + 400, point3d[1] + 400);
-            //ctx.fillText("x: " + Math.floor(point3d[0] + 400) + ", y: " + Math.floor(point3d[1] + 400) + " $ " + i++, point3d[0] + 400, point3d[1] + 400);
+            ctx.lineTo(point3d[0] + canvasX / 2, point3d[1] + canvasY / 2);
+            //ctx.fillText("x: " + Math.floor(point3d[0] + canvasX/2) + ", y: " + Math.floor(point3d[1] + canvasY/2) + " $ " + i++, point3d[0] + canvasX/2, point3d[1] + canvasY/2);
 
         });
         scale = shape[0][2];
-        ctx.moveTo(shape[0][0] + 400, shape[0][1] + 400);
+        ctx.moveTo(shape[0][0] + canvasX / 2, shape[0][1] + canvasY / 2);
         ctx.stroke();
     }
 
@@ -197,7 +200,7 @@
         }
         ctx.fillStyle = 'black';
         ctx.font = `${Math.max(5000 / shape[0][2], 5)}px serif`;
-        ctx.fillText(text, (shape[0][0]) + 400, (shape[0][1]) + 400);
+        ctx.fillText(text, (shape[0][0]) + canvasX / 2, (shape[0][1]) + canvasY / 2);
     }
 
     function translateToRealWorld(shape, scale, x, y, z, text = "") {
@@ -207,7 +210,7 @@
 
     function showCursor() {
         ctx.beginPath();
-        ctx.arc(400, 400, 1, 0, 2 * Math.PI);
+        ctx.arc(canvasX / 2, canvasY / 2, 1, 0, 2 * Math.PI);
 
         ctx.stroke();
     }
@@ -215,7 +218,7 @@
     function renderFrame() {
         fillBackground();
         let speed = 2
-        if (keys['v']) speed = 4
+        if (keys['v']) speed = 5
         if (keys['w']) w += speed * Math.cos(rotateXM)
         if (keys['a']) a += speed * Math.cos(rotateXM)
         if (keys['s']) s += speed * Math.cos(rotateXM)
@@ -227,7 +230,7 @@
         if (keys['d']) s += speed * Math.sin(rotateXM)
 
 
-        //measureFPS();
+        measureFPS();
         ctx.fillStyle = 'black';
         ctx.font = "15px serif";
         ctx.fillText('press "v" for run  ', 100, 70)
@@ -248,18 +251,45 @@
         // translateToRealWorld(ground, 100, 0, 0, 250);
         // translateToRealWorld(ground, 100, 100, 0, -20);
         showCursor();
-
-        // for (let j = 0; j < 10; j++) {
-        //     for (let i = 0; i < 10; i++) {
         translateToRealWorld(ground, 100, 0, 0, 149.9, "North");
         translateToRealWorld(ground, 100, 0, 0, -149.9, "Sauth");
         translateToRealWorld(ground, 100, 149.9, 0, 0, "East");
         translateToRealWorld(ground, 100, -149.9, 0, 0, "West");
-        //         translateToRealWorld(leground, 100, -i * 2 * 100, 0, 10 * 100);
-        //         translateToRealWorld(leground, 100, (((i - 1) * 2) * 100) + 100, 0, 10 * 100 - 100);
-        //         translateToRealWorld(leground, 100, ((-i * 2) * 100) + 100, 0, 10 * 100 - 100);
-        //     }
-        // }
+        translateToRealWorld([[0, 0, 0]], 100, 0, -200, 1549.9, "Welcome to My Game");
+        for (let j = -10; j < 10; j++) {
+            for (let i = -10; i < 10; i++) {
+                translateToRealWorld(leground, 100, -i * 149.9, 0, j * 149.9);
+            }
+        }
+
+
+        for (let j = -10; j < 10; j++) {
+            for (let i = -10; i < 10; i++) {
+                translateToRealWorld(leground, 100, -i * 149.9, -750 + (i * Math.sin(i) * 100) / 5, j * 149.9);
+            }
+        }
+
+
+        const numTurns = 5;           // Number of spiral turns
+        const pointsPerTurn = 100;    // Points per turn (density)
+        const zStep = 0.1;            // How much z increases per point
+        const radiusGrowth = 0.05;    // Radius growth per point
+
+        const spiral = [];
+
+        for (let turn = 0; turn < numTurns; turn++) {
+            for (let i = 0; i < pointsPerTurn; i++) {
+                const index = turn * pointsPerTurn + i;
+                const theta = 2 * Math.PI * (index / pointsPerTurn);
+                const radius = index * radiusGrowth;
+
+                const x = radius * Math.cos(theta);
+                const y = radius * Math.sin(theta);
+                const z = index * zStep;
+
+                translateToRealWorld(ground, 100, x * 100, y * 100, (-z * 100) - 149.9, "Sauth");
+            }
+        }
 
 
         ctx.strokeStyle = "red";
