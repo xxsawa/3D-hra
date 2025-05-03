@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Game</title>
+    <link rel="icon"
+        href="https://static.vecteezy.com/system/resources/previews/040/181/927/non_2x/isometric-cube-line-icon-3d-box-augmented-reality-icon-concept-ar-symbol-black-block-symbol-3d-square-block-isometric-cubic-shape-illustration-isolated-on-white-background-vector.jpg">
+</head>
+
+<body>
+    <canvas style="margin-left: 7.5vw;border: solid;" id="tutorial" width="800" height="800"></canvas>
+
+</body>
+<script>
+
+    let lastFrameTime = performance.now();
+    let fps = 0;
+    let weWillRotate = 0;
+    let w = 0, a = 0, s = 0, d = 0;
+    const canvas = document.getElementById("tutorial");
+    const ctx = canvas.getContext("2d");
+
+    const keys = {};
+    window.addEventListener('keydown', e => keys[e.key] = true);
+    window.addEventListener('keyup', e => keys[e.key] = false);
+    let mouse = { x: 0, y: 0 };
+
+    canvas.addEventListener('click', () => {
+        canvas.requestPointerLock();
+    });
+
+    document.addEventListener('pointerlockchange', () => {
+        if (document.pointerLockElement === canvas) {
+            console.log('Pointer locked!');
+            window.addEventListener('mousemove', onMouseMove);
+
+        } else {
+            console.log('Pointer unlocked!');
+        }
+    });
+    let mouseStopTimeout;
+    function onMouseMove(e) {
+        mouse = { x: e.movementX, y: e.movementY }
+        clearTimeout(mouseStopTimeout);
+        mouseStopTimeout = setTimeout(() => {
+            mouse = { x: 0, y: 0 }
+
+        }, 1);
+    }
+
+
+    function multiply(a, b) {
+        var aNumRows = a.length, aNumCols = a[0].length,
+            bNumRows = b.length, bNumCols = b[0].length,
+            m = new Array(aNumRows);  // initialize array of rows
+        for (var r = 0; r < aNumRows; ++r) {
+            m[r] = new Array(bNumCols); // initialize the current row
+            for (var c = 0; c < bNumCols; ++c) {
+                m[r][c] = 0;             // initialize the current cell
+                for (var i = 0; i < aNumCols; ++i) {
+                    m[r][c] += a[r][i] * b[i][c];
+                }
+            }
+        }
+        return m;
+    }
+
+
+    let ground = [
+        [0, 0, 0],  //0
+        [1, 0, 0],  //1
+        [1, 1, 0],  //2
+        [0, 1, 0],  //3
+        [0, 0, 0],  //4
+        [0, 0, 1],  //5
+        [1, 0, 1],  //6
+        [1, 1, 1],  //7
+
+        [0, 1, 1],  //8
+        [0, 0, 1],  //9
+        [1, 0, 1],  //10
+        [1, 0, 0],  //11
+
+        [1, 1, 0],  //2
+        [1, 1, 1],  //7
+        [0, 1, 1],  //8
+
+        [0, 1, 0],  //3
+
+
+    ];
+
+    let leground = [
+        [0, 1, 0],
+        [0, 1, 1],
+        [1, 1, 1],
+        [1, 1, 0],
+    ];
+
+    let middlePoint = [
+        [-1, 0, 0],
+        [1, 0, 0],
+        [0, .5, 0],
+        [0, -.5, 0],
+
+    ];
+
+
+    function rotateX(angle, shape) {
+        return multiply(shape, [
+            [1, 0, 0],
+            [0, Math.cos(angle), -Math.sin(angle)],
+            [0, Math.sin(angle), Math.cos(angle)],
+        ]);
+    }
+
+    function rotateY(angle, shape) {
+        return multiply(shape, [
+            [Math.cos(angle), 0, Math.sin(angle)],
+            [0, 1, 0],
+            [-Math.sin(angle), 0, Math.cos(angle)],
+        ]);
+    }
+
+    function rotateZ(angle, shape) {
+        return multiply(shape, [
+            [Math.cos(angle), -Math.sin(angle), 0],
+            [Math.sin(angle), Math.cos(angle), 0],
+            [0, 0, 1],
+        ]);
+    }
+
+    function translate(shape, c, dx, dy, dz = 0) {
+        return shape.map(point3d => [point3d[0] * c + dx, point3d[1] * c + dy, point3d[2] * c + dz]);
+    }
+
+
+    function measureFPS() {
+        const now = performance.now();
+        const delta = now - lastFrameTime;
+        lastFrameTime = now;
+
+        fps = 1000 / delta;
+        ctx.fillStyle = 'black';
+        ctx.font = "15px serif";
+        ctx.fillText(`FPS: ${fps.toFixed(2)}`, 10, 50);
+    }
+
+    function fillBackground() {
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    let rotateXM = 0;
+    let rotateYM = 0;
+    let ratio = 0;
+    function renderShape(shape) {
+        let i = 0;
+
+        ctx.beginPath();
+
+        shape = rotateX(rotateYM, rotateY(rotateXM, shape))
+
+        for (let i = 0; i < shape.length; i++) {
+
+            shape[i] = [shape[i][0] * 500 / Math.max(shape[i][2], 0.1), (shape[i][1] * 500 / Math.max(shape[i][2], 0.1)), shape[i][2]]
+        }
+        let scale = shape[0][2];
+
+        ctx.moveTo((shape[0][0]) + 400, (shape[0][1]) + 400);
+        shape.forEach(point3d => {
+            if (point3d[0] + 400 > 800 || point3d[1] + 400 > 800 || point3d[0] + 400 < 0 || point3d[1] + 400 < 0) {
+                ctx.fillStyle = "red"
+            } else {
+                ctx.fillStyle = "black"
+
+            }
+
+            ctx.font = "10px serif";
+            scale = point3d[2];
+            ctx.lineTo(point3d[0] + 400, point3d[1] + 400);
+
+        });
+        scale = shape[0][2];
+        ctx.moveTo(shape[0][0] + 400, shape[0][1] + 400);
+        ctx.stroke();
+    }
+
+    function renderText(shape, text) {
+        shape = rotateX(rotateYM, rotateY(rotateXM, shape))
+        for (let i = 0; i < shape.length; i++) {
+
+            shape[i] = [shape[i][0] * 500 / Math.max(shape[i][2], 0.1), (shape[i][1] * 500 / Math.max(shape[i][2], 0.1)), shape[i][2]]
+        }
+        ctx.fillStyle = 'black';
+        ctx.font = `${Math.max(5000 / shape[0][2], 5)}px serif`;
+        ctx.fillText(text, (shape[0][0]) + 400, (shape[0][1]) + 400);
+    }
+
+    function translateToRealWorld(shape, scale, x, y, z, text = "") {
+        renderShape(translate(translate(shape, 1, -0.5, -0.5, -0.5), scale, x + (a - d), y, z + (s - w)));
+        renderText(translate(translate([[0.5, 0.5, 0.5]], 1, -0.5, -0.5, -0.5), scale, x + (a - d), y, z + (s - w)), text)
+    }
+
+    function showCursor() {
+        ctx.beginPath();
+        ctx.arc(400, 400, 1, 0, 2 * Math.PI);
+
+        ctx.stroke();
+    }
+
+    function renderFrame() {
+        fillBackground();
+        let speed = 2
+        if (keys['v']) speed = 4
+        if (keys['w']) w += speed * Math.cos(rotateXM)
+        if (keys['a']) a += speed * Math.cos(rotateXM)
+        if (keys['s']) s += speed * Math.cos(rotateXM)
+        if (keys['d']) d += speed * Math.cos(rotateXM)
+
+        if (keys['w']) d += speed * Math.sin(rotateXM)
+        if (keys['a']) w += speed * Math.sin(rotateXM)
+        if (keys['s']) a += speed * Math.sin(rotateXM)
+        if (keys['d']) s += speed * Math.sin(rotateXM)
+
+
+        //measureFPS();
+        ctx.fillStyle = 'black';
+        ctx.font = "15px serif";
+        ctx.fillText('press "v" for run  ')
+        let zval = document.getElementById("slider");
+        ctx.strokeStyle = "black";
+        ratio = Math.sin(rotateXM);
+
+        // ctx.fillText(ratio + "", 100, 110);
+        // ctx.fillText("my x: " + (d - a), 100, 130);
+        // ctx.fillText("my z: " + (w - s), 100, 160);
+
+        rotateYM -= mouse.y / 1000
+        rotateXM += mouse.x / 1000
+
+        // translateToRealWorld(ground, 100, 0, 0, 250);
+        // translateToRealWorld(ground, 100, 100, 0, -20);
+        showCursor();
+
+        // for (let j = 0; j < 10; j++) {
+        //     for (let i = 0; i < 10; i++) {
+        translateToRealWorld(ground, 100, 0, 0, 149.9, "sever");
+        translateToRealWorld(ground, 100, 0, 0, -149.9, "juh");
+        translateToRealWorld(ground, 100, 149.9, 0, 0, "vychod");
+        translateToRealWorld(ground, 100, -149.9, 0, 0, "zapad");
+        //         translateToRealWorld(leground, 100, -i * 2 * 100, 0, 10 * 100);
+        //         translateToRealWorld(leground, 100, (((i - 1) * 2) * 100) + 100, 0, 10 * 100 - 100);
+        //         translateToRealWorld(leground, 100, ((-i * 2) * 100) + 100, 0, 10 * 100 - 100);
+        //     }
+        // }
+
+
+        ctx.strokeStyle = "red";
+        //renderShape(translate(middlePoint, 100, 400, 400));
+        requestAnimationFrame(renderFrame);
+    }
+
+    requestAnimationFrame(renderFrame);
+</script>
+
+</html>
